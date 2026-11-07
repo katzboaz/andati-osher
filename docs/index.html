@@ -286,7 +286,7 @@ window.BOOK = {
     const s = B.stories[e.id];
     if (s.series) { if (seenSeries.has(s.series)) return; seenSeries.add(s.series); }
     const a = document.createElement("a");
-    a.className = "featured"; a.href = "#" + e.id;
+    a.className = "featured"; a.href = "#" + (s.home || e.id); // a series opens on its own page
     a.innerHTML = `<div class="glyph" aria-hidden="true">${s.glyph || ""}</div>
       <div><span class="eyebrow"></span><h2></h2><p></p><span class="go">לקריאה</span></div>`;
     a.querySelector(".eyebrow").textContent = s.eyebrow || `${s.kind} · עמוד ${e.p}`;

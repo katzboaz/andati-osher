@@ -1,9 +1,9 @@
 /* אני אצל יובל — nine chapters scattered through the book on purpose.
-   A long read, so no scrolling here: the text is set in fixed pages and turned like a book
-   (arrows, swipe, a tap on the page edge, or the wheel). Each chapter is its own stop in
-   the book; its last page is a crossroads: keep reading the book, or jump straight to the
-   next chapter. After the last chapter the whole thing can be read again in one sitting,
-   in time order (by chapter number) or in book order.
+   A long read, so no scrolling here: the text is set in fixed pages, moved the same way as
+   every other fixed piece (see kit.js: down is forward). Read in the book, each chapter is
+   just its stop there and ends like any other piece, with the next piece in the book. The
+   story's own page (#yuval) is the only place to choose an order: all nine chapters in one
+   sitting, in book order or in time order (by chapter number).
    The thread at the top maps the chapters across pages 11–37. Read chapters get two blue
    ticks, the read receipt the story itself turns on. */
 (() => {
@@ -56,13 +56,13 @@ html.yv-lock, html.yv-lock body { overflow: hidden; height: 100%; overscroll-beh
   position: fixed; inset: 0; background: var(--paper);
   display: grid; grid-template-rows: calc(56px + env(safe-area-inset-top, 0px)) auto minmax(0, 1fr) calc(68px + env(safe-area-inset-bottom, 0px));
   padding-left: var(--gut-l); padding-right: var(--gut-r);
-  -webkit-user-select: text; user-select: text; touch-action: pan-y;
+  -webkit-user-select: text; user-select: text; touch-action: pinch-zoom;
 }
 .yv-thread { position: relative; width: min(760px, 100%); height: 46px; margin: 0 auto; grid-row: 2; }
 .yv-thread .line { position: absolute; inset: 15px 0 auto; height: 1px; background: var(--hair); }
 .yv-dot { position: absolute; top: 13px; width: 5px; height: 5px; margin-right: -2.5px; border-radius: 50%; background: var(--hair); transition: right .9s cubic-bezier(.6,.05,.25,1), opacity .6s; }
 .yv-mark {
-  position: absolute; top: 0; width: 30px; margin-right: -15px; height: 46px; padding: 0; border: 0; background: none; cursor: pointer;
+  position: absolute; top: 0; width: 30px; margin-right: -15px; height: 46px; padding: 0; border: 0; background: none; cursor: default;
   display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-faint);
   transition: right .9s cubic-bezier(.6,.05,.25,1), color .3s;
 }
@@ -72,17 +72,17 @@ html.yv-lock, html.yv-lock body { overflow: hidden; height: 100%; overscroll-beh
 .yv-mark.read { color: var(--accent); }
 .yv-mark.read .t2 { opacity: 1; }
 .yv-mark .lb { font-family: var(--f-mono); font-weight: 300; font-size: 10px; line-height: 1; direction: ltr; color: var(--ink-faint); opacity: 0; transition: opacity .3s; white-space: nowrap; }
-.yv-mark:hover .lb, .yv-mark.cur .lb, .yv.time .yv-mark .lb { opacity: 1; }
+.yv.whole .yv-mark { cursor: pointer; }
+.yv.whole .yv-mark:hover .lb, .yv-mark.cur .lb, .yv.time .yv-mark .lb { opacity: 1; }
 .yv-mark.cur .lb { color: var(--ink); }
 .yv-mark.cur::after { content: ""; position: absolute; top: 40px; width: 14px; height: 1px; background: var(--ink); }
 .yv.time .yv-dot { opacity: 0; }
 
-.yv-stage { grid-row: 3; position: relative; display: flex; justify-content: center; min-height: 0; padding-top: 3vh; cursor: default; }
+.yv-stage { grid-row: 3; position: relative; display: flex; justify-content: center; min-height: 0; padding-top: 3vh; cursor: pointer; }
 .yv-window { height: 100%; overflow: hidden; position: relative; }
 .yv-flow {
   height: 100%; column-fill: auto; orphans: 2; widows: 2;
   font-family: var(--f-body); font-size: 20.5px; line-height: 1.9; color: var(--ink);
-  transition: transform .6s cubic-bezier(.6,.05,.25,1);
 }
 .yv-flow p { margin: 0 0 .8em; text-wrap: pretty; }
 .yv-flow .brk { break-before: column; -webkit-column-break-before: always; }
@@ -114,21 +114,19 @@ html.yv-lock, html.yv-lock body { overflow: hidden; height: 100%; overscroll-beh
 a.yv-opt:hover strong { color: var(--accent); }
 .yv-opt.soon strong { color: var(--ink-faint); }
 .yv-opt.main { border-top-color: var(--ink); }
+.yv-end nav { display: flex; flex-wrap: wrap; gap: 28px; font-size: 13px; letter-spacing: .08em; }
+.yv-end nav a { text-decoration: none; border-bottom: 1px solid var(--hair); padding-bottom: 3px; }
+.yv-end nav .soon { color: var(--ink-faint); }
 .yv-back { font-size: 13px; letter-spacing: .08em; color: var(--ink-soft); text-decoration: none; justify-self: start; border-bottom: 1px solid var(--hair); padding-bottom: 3px; }
 
-.yv-side { position: absolute; top: 0; bottom: 0; width: max(48px, calc((100% - var(--pw)) / 2)); border: 0; background: none; padding: 0; cursor: pointer; color: var(--ink-faint); display: flex; align-items: center; justify-content: center; transition: color .3s; }
-.yv-side:hover { color: var(--ink); }
-.yv-side[disabled] { opacity: 0; pointer-events: none; }
-.yv-side.prev { right: 0; } .yv-side.next { left: 0; }
-.yv-side svg { width: 14px; height: 28px; }
-.yv-side path, .yv-foot path { fill: none; stroke: currentColor; stroke-width: 1.2; }
+.yv-foot path { fill: none; stroke: currentColor; stroke-width: 1.2; }
 
 .yv-foot { grid-row: 4; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: min(760px, 100%); margin: 0 auto; padding-bottom: env(safe-area-inset-bottom, 0px); font-family: var(--f-ui); font-weight: 300; font-size: 12px; color: var(--ink-soft); }
 .yv-where { justify-self: start; letter-spacing: .04em; }
 .yv-ctrl { display: flex; align-items: center; gap: 14px; }
 .yv-ctrl button { border: 0; background: none; padding: 10px; cursor: pointer; color: var(--ink-soft); }
 .yv-ctrl button[disabled] { color: var(--hair); cursor: default; }
-.yv-ctrl svg { width: 8px; height: 14px; display: block; }
+.yv-ctrl svg { width: 14px; height: 8px; display: block; }
 .yv-count { font-family: var(--f-mono); font-size: 12px; direction: ltr; min-width: 4.5em; text-align: center; }
 .yv-hint { justify-self: end; color: var(--ink-faint); transition: opacity .8s; }
 .yv-hint.gone { opacity: 0; }
@@ -142,7 +140,6 @@ a.yv-opt:hover strong { color: var(--accent); }
   .yv-num.again { text-shadow: -12px 8px 0 #f3f3f0; }
   .yv-head { padding-bottom: 1.1em; }
   .yv-head h2 { font-size: 28px; }
-  .yv-side { display: none; }
   .yv-where { display: none; }
   .yv-foot { grid-template-columns: auto 1fr auto; gap: 8px; }
   .yv-ctrl { grid-column: 1; }
@@ -159,8 +156,7 @@ a.yv-opt:hover strong { color: var(--accent); }
   const saveRead = s => { try { localStorage.setItem(READ_KEY, JSON.stringify([...s])); } catch (e) {} };
   const tocIdx = id => B.toc.findIndex(e => e.id === id);
   const ticks = `<svg viewBox="0 0 20 14" aria-hidden="true"><path class="t1" d="M1.5 7.5l3.6 3.6L12 3.2"/><path class="t2" d="M8.4 10.6l.5.5L16.4 3.2"/></svg>`;
-  const chev = dir => `<svg viewBox="0 0 8 14" aria-hidden="true"><path d="${dir === "next" ? "M7 1L1 7l6 6" : "M1 1l6 6-6 6"}"/></svg>`;
-  const sideChev = dir => `<svg viewBox="0 0 14 28" aria-hidden="true"><path d="${dir === "next" ? "M13 1L1 14l12 13" : "M1 1l12 13L1 27"}"/></svg>`;
+  const { bindTurns, turner, CHEV_NEXT, CHEV_PREV, HINT } = window.KIT;
 
   function head(c, withVoice, first) {
     return `<header class="yv-head${first ? "" : " brk"}" data-ch="${c.id}">
@@ -170,35 +166,9 @@ a.yv-opt:hover strong { color: var(--accent); }
     </header>${c.paras.map(t => `<p>${t}</p>`).join("")}`;
   }
 
-  function nextInBook(c) {
-    const e = B.toc[tocIdx(c.id) + 1];
-    return e ? { e, open: !!(e.id && B.stories[e.id]) } : null;
-  }
-
-  function chapterEnd(c) {
-    const i = CH.indexOf(c), nb = nextInBook(c), ny = CH[i + 1];
-    const between = ny ? tocIdx(ny.id) - tocIdx(c.id) - 1 : 0;
-    const bookOpt = nb && `<${nb.open ? `a href="#${nb.e.id}"` : "div"} class="yv-opt${nb.open ? "" : " soon"}">
-        <span class="eyebrow">להמשיך בספר</span>
-        <strong>${esc(nb.e.t + (nb.e.s ? " · " + nb.e.s : ""))}</strong>
-        <span class="m">עמוד ${nb.e.p}${nb.open ? "" : " · בקרוב"}</span></${nb.open ? "a" : "div"}>`;
-    let jump = "";
-    if (ny && between > 0) {
-      jump = `<a href="#${ny.id}" class="yv-opt main">
-        <span class="eyebrow">לקפוץ לפרק הבא של יובל</span>
-        <strong>${ny.n}</strong>
-        <span class="m">עמוד ${ny.p} · מדלג על ${between === 1 ? "קטע אחד" : between + " קטעים"}</span></a>`;
-    } else if (!ny) {
-      jump = `<a href="#yuval-all" class="yv-opt main">
-        <span class="eyebrow">עכשיו, הכל ברצף</span>
-        <strong>לקרוא את תשעת הפרקים לפי סדר הזמן</strong>
-        <span class="m">מפרק מינוס 1 ועד פרק 4</span></a>`;
-    }
-    return `<section class="yv-end brk"><div class="mark"></div>
-      <span class="eyebrow">סוף ${c.n}${ny && !between ? " · הפרק הבא של יובל הוא גם הקטע הבא בספר" : ""}</span>
-      <div>${jump}${bookOpt || ""}</div>
-      <a class="yv-back" href="#toc">חזרה לתוכן</a><i class="yv-s"></i></section>`;
-  }
+  // read in the book, a chapter ends like any other piece: back to the contents, or the next piece
+  const chapterEnd = (c, endNav) => `<section class="yv-end brk"><div class="mark"></div>
+      <span class="eyebrow">סוף ${c.n}</span>${endNav}<i class="yv-s"></i></section>`;
 
   function wholeFlow(order) {
     const list = order === "time" ? BYTIME : CH;
@@ -239,19 +209,17 @@ a.yv-opt:hover strong { color: var(--accent); }
     let order = opts.order || "book";
     const read = loadRead();
 
-    root.innerHTML = `<section class="yv${whole && order === "time" ? " time" : ""}" aria-roledescription="ספר">
+    root.innerHTML = `<section class="yv${whole ? " whole" : ""}${whole && order === "time" ? " time" : ""}" aria-roledescription="ספר">
       <div class="yv-thread" role="navigation" aria-label="פרקי אני אצל יובל"><div class="line"></div></div>
       <div class="yv-stage">
-        <button type="button" class="yv-side prev" aria-label="לעמוד הקודם">${sideChev("prev")}</button>
         <div class="yv-window"><div class="yv-flow"></div></div>
-        <button type="button" class="yv-side next" aria-label="לעמוד הבא">${sideChev("next")}</button>
       </div>
       <footer class="yv-foot">
         <span class="yv-where"></span>
         <span class="yv-ctrl">
-          <button type="button" class="pv" aria-label="לעמוד הקודם">${chev("prev")}</button>
+          <button type="button" class="pv" aria-label="לעמוד הקודם">${CHEV_PREV}</button>
           <span class="yv-count" aria-live="polite"></span>
-          <button type="button" class="nx" aria-label="לעמוד הבא">${chev("next")}</button>
+          <button type="button" class="nx" aria-label="לעמוד הבא">${CHEV_NEXT}</button>
         </span>
         <span class="yv-hint"></span>
         <span class="yv-bar"><i></i></span>
@@ -261,8 +229,8 @@ a.yv-opt:hover strong { color: var(--accent); }
       stage = root.querySelector(".yv-stage"), win = root.querySelector(".yv-window"), flow = root.querySelector(".yv-flow"),
       count = root.querySelector(".yv-count"), where = root.querySelector(".yv-where"), hint = root.querySelector(".yv-hint"),
       barI = root.querySelector(".yv-bar i"), shellBar = document.getElementById("progress");
-    const touch = matchMedia("(pointer: coarse)").matches;
-    hint.textContent = touch ? "החליקו או הקישו בשולי העמוד" : "חיצים, גלגלת או לחיצה בשוליים";
+    hint.textContent = HINT;
+    const turn = turner(win);
 
     /* thread: other pieces as faint dots, chapters as tick marks */
     const others = B.toc.filter(e => e.p > P0 && e.p < P1 && !/^yuval/.test(e.id || ""));
@@ -275,6 +243,7 @@ a.yv-opt:hover strong { color: var(--accent); }
     const marks = CH.map(c => {
       const b = document.createElement("button");
       b.type = "button"; b.className = "yv-mark"; b.dataset.id = c.id;
+      if (!whole) { b.tabIndex = -1; b.setAttribute("aria-disabled", "true"); }
       b.setAttribute("aria-label", `${c.n}, עמוד ${c.p}`);
       b.innerHTML = `${ticks}<span class="lb"></span>`;
       thread.appendChild(b); return b;
@@ -299,7 +268,7 @@ a.yv-opt:hover strong { color: var(--accent); }
     /* pagination */
     let pw = 0, pg = 0, total = 1, page = 0, starts = [], ranges = [];
     function fill() {
-      flow.innerHTML = whole ? wholeFlow(order) : head(opts.ch, false, true) + chapterEnd(opts.ch);
+      flow.innerHTML = whole ? wholeFlow(order) : head(opts.ch, false, true) + chapterEnd(opts.ch, opts.endNav);
     }
     function layout(keepId) {
       const sw = stage.clientWidth, narrow = innerWidth <= 860;
@@ -307,7 +276,7 @@ a.yv-opt:hover strong { color: var(--accent); }
       pg = 120;
       yv.style.setProperty("--pw", pw + "px");
       win.style.width = pw + "px";
-      Object.assign(flow.style, { width: pw + "px", columnWidth: pw + "px", columnGap: pg + "px", transition: "none", transform: "none" });
+      Object.assign(flow.style, { width: pw + "px", columnWidth: pw + "px", columnGap: pg + "px", transform: "none" });
       const R = flow.getBoundingClientRect().right, step = pw + pg;
       const pageAt = (r) => Math.max(0, Math.round((R - r.right) / step));
       const heads = [...flow.querySelectorAll(".yv-head")];
@@ -316,26 +285,22 @@ a.yv-opt:hover strong { color: var(--accent); }
       total = pageAt(s[s.length - 1]) + 1;
       const endPage = pageAt(flow.querySelector(".yv-end").getClientRects()[0]);
       ranges = starts.map((st, i) => ({ id: st.id, from: st.page, to: (starts[i + 1] ? starts[i + 1].page : endPage) - 1 }));
-      flow.offsetWidth; // commit the reset before re-enabling the slide
-      flow.style.transition = "";
       const k = keepId && starts.find(x => x.id === keepId);
       go(k ? k.page : Math.min(page, total - 1), false);
     }
     const chapterAt = n => ranges.find(r => n >= r.from && n <= r.to);
-    let turned = false;
     function go(n, animate = true) {
       n = Math.max(0, Math.min(total - 1, n));
-      if (n !== page && animate) { turned = true; hint.classList.add("gone"); }
+      const dir = animate ? Math.sign(n - page) : 0;
+      if (dir) hint.classList.add("gone");
       page = n;
-      if (!animate || reduced) { flow.style.transition = "none"; }
-      flow.style.transform = `translateX(${n * (pw + pg)}px)`;
-      if (!animate || reduced) { flow.offsetWidth; flow.style.transition = ""; }
+      turn(dir, () => { flow.style.transform = `translateX(${n * (pw + pg)}px)`; });
       count.textContent = `${n + 1} / ${total}`;
       const pct = total > 1 ? n / (total - 1) : 1;
       barI.style.width = pct * 100 + "%";
       if (shellBar) shellBar.style.transform = `scaleX(${pct})`;
-      root.querySelectorAll(".yv-side.prev, .yv-ctrl .pv").forEach(b => b.disabled = n === 0);
-      root.querySelectorAll(".yv-side.next, .yv-ctrl .nx").forEach(b => b.disabled = n === total - 1);
+      root.querySelector(".yv-ctrl .pv").disabled = n === 0;
+      root.querySelector(".yv-ctrl .nx").disabled = n === total - 1;
       const r = chapterAt(n), curId = whole ? (r && r.id) : opts.ch.id;
       marks.forEach(m => m.classList.toggle("cur", m.dataset.id === curId));
       const cur = CH.find(c => c.id === curId);
@@ -346,40 +311,8 @@ a.yv-opt:hover strong { color: var(--accent); }
     }
     const next = () => go(page + 1), prev = () => go(page - 1);
 
-    /* input */
-    const onKey = e => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (["ArrowLeft", "PageDown", " "].includes(e.key) || (e.key === "ArrowDown")) { e.preventDefault(); next(); }
-      else if (["ArrowRight", "PageUp", "ArrowUp"].includes(e.key)) { e.preventDefault(); prev(); }
-      else if (e.key === "Home") { e.preventDefault(); go(0); }
-      else if (e.key === "End") { e.preventDefault(); go(total - 1); }
-    };
-    let wheelAcc = 0, wheelLock = 0;
-    const onWheel = e => {
-      e.preventDefault();
-      const now = performance.now();
-      if (now < wheelLock) return;
-      wheelAcc += Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : -e.deltaX;
-      if (Math.abs(wheelAcc) > 40) { wheelAcc > 0 ? next() : prev(); wheelAcc = 0; wheelLock = now + 700; }
-    };
-    let tx = null, ty = 0;
-    const onTouchStart = e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; };
-    const onTouchEnd = e => {
-      if (tx === null) return;
-      const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
-      tx = null;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { dx > 0 ? next() : prev(); swiped = performance.now(); }
-    };
-    let swiped = 0;
-    stage.addEventListener("click", e => {
-      if (e.target.closest("a, button") || performance.now() - swiped < 400) return;
-      if (String(getSelection() || "").length) return;
-      const r = win.getBoundingClientRect(), x = e.clientX;
-      const edge = Math.max(44, r.width * .28);
-      if (x < r.left + edge) next(); else if (x > r.right - edge) prev();
-    });
-    stage.querySelector(".yv-side.next").onclick = next;
-    stage.querySelector(".yv-side.prev").onclick = prev;
+    /* input: the same as every fixed piece */
+    const turns = bindTurns(stage, { next, prev, first: () => go(0), last: () => go(total - 1) });
     root.querySelector(".yv-ctrl .nx").onclick = next;
     root.querySelector(".yv-ctrl .pv").onclick = prev;
     // keep keyboard focus and the page in step; never let the clipped window scroll itself
@@ -395,30 +328,26 @@ a.yv-opt:hover strong { color: var(--accent); }
       if (o && o.dataset.order !== order) setOrder(o.dataset.order);
       if (e.target.closest(".yv-start")) go(1);
     });
-    marks.forEach(m => m.addEventListener("click", () => {
-      if (!whole) { if (m.dataset.id !== opts.ch.id) location.hash = m.dataset.id; return; }
+    // the thread is a map while reading in the book; only on the story's own page does it move you
+    if (whole) marks.forEach(m => m.addEventListener("click", () => {
       const s = starts.find(x => x.id === m.dataset.id); if (s) go(s.page);
     }));
     function setOrder(o) {
       const r = chapterAt(page), keep = r && r.id;
       order = o;
-      history.replaceState(null, "", o === "time" ? "#yuval-all" : "#yuval-book");
+      history.replaceState(null, "", o === "time" ? "#yuval-all" : "#yuval");
       fill(); placeMarks(); layout(keep);
     }
 
     let rz = 0;
     const onResize = () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { const r = chapterAt(page); placeMarks(); layout(whole && r ? r.id : null); }); };
-    addEventListener("keydown", onKey);
     addEventListener("resize", onResize);
-    stage.addEventListener("wheel", onWheel, { passive: false });
-    stage.addEventListener("touchstart", onTouchStart, { passive: true });
-    stage.addEventListener("touchend", onTouchEnd, { passive: true });
 
     fill(); layout();
     if (document.fonts && document.fonts.status !== "loaded") document.fonts.ready.then(() => { if (active) layout(); });
 
     active = () => {
-      removeEventListener("keydown", onKey);
+      turns.off();
       removeEventListener("resize", onResize);
       document.documentElement.classList.remove("yv-lock");
       if (shellBar) shellBar.style.transform = "scaleX(0)";
@@ -428,14 +357,15 @@ a.yv-opt:hover strong { color: var(--accent); }
   const unmount = () => { if (active) active(); };
 
   const glyph = `<svg viewBox="0 0 40 26" width="44" aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l6.5 6.5L22 6" stroke="#1c1c1a"/><path d="M15.5 19.8l.7.7L28.7 6" stroke="${ACCENT}"/></svg>`;
-  const blurb = "תשעה פרקים קצרים שמפוזרים בספר, ולא לפי הסדר. אפשר לקרוא אותם במקום שלהם, לקפוץ מפרק לפרק, ובסוף לקרוא את הכל ברצף, לפי סדר הזמן.";
+  const blurb = "תשעה פרקים קצרים שמפוזרים בספר, ולא לפי הסדר. כאן אפשר לקרוא את כולם ברצף, לפי סדר הספר או לפי סדר הזמן.";
   CH.forEach(c => B.register({
-    id: c.id, series: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים",
+    id: c.id, series: "yuval", home: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים",
     eyebrow: `סיפור בפרקים · ${CH.length} פרקים · עמודים ${P0}–${P1}`,
     blurb, glyph, accent: ACCENT,
-    mount: root => mount(root, { mode: "chapter", ch: c }), unmount
+    mount: (root, ctx) => mount(root, { mode: "chapter", ch: c, endNav: ctx.endNav }), unmount
   }));
-  [["yuval-all", "time"], ["yuval-book", "book"]].forEach(([id, order]) => B.register({
+  // the story's own page; yuval-book stays as an old address for the same thing
+  [["yuval", "book"], ["yuval-all", "time"], ["yuval-book", "book"]].forEach(([id, order]) => B.register({
     id, series: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים", accent: ACCENT,
     mount: root => mount(root, { mode: "whole", order }), unmount
   }));
