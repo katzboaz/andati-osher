@@ -1,9 +1,9 @@
 /* אני אצל יובל — nine chapters scattered through the book on purpose.
    A long read, so no scrolling here: the text is set in fixed pages, moved the same way as
    every other fixed piece (see kit.js: down is forward). Read in the book, each chapter is
-   just its stop there and ends like any other piece, with the next piece in the book. The
-   story's own page (#yuval) is the only place to choose an order: all nine chapters in one
-   sitting, in book order or in time order (by chapter number).
+   just its stop there and ends like any other piece, with the next piece in the book. Only
+   the last chapter adds one more door, to a page nothing else links to (#yuval): all nine
+   chapters in one sitting, in book order or in time order (by chapter number).
    The thread at the top maps the chapters across pages 11–37. Read chapters get two blue
    ticks, the read receipt the story itself turns on. */
 (() => {
@@ -166,9 +166,13 @@ a.yv-opt:hover strong { color: var(--accent); }
     </header>${c.paras.map(t => `<p>${t}</p>`).join("")}`;
   }
 
-  // read in the book, a chapter ends like any other piece: back to the contents, or the next piece
+  // read in the book, a chapter ends like any other piece: back to the contents, or the next piece.
+  // the last one also opens the hidden page with the whole story
   const chapterEnd = (c, endNav) => `<section class="yv-end brk"><div class="mark"></div>
-      <span class="eyebrow">סוף ${c.n}</span>${endNav}<i class="yv-s"></i></section>`;
+      <span class="eyebrow">סוף ${c.n}</span>${c === CH[CH.length - 1] ? `<a href="#yuval" class="yv-opt main">
+        <span class="eyebrow">עכשיו, הכל ברצף</span>
+        <strong>לקרוא את תשעת הפרקים ברצף</strong>
+        <span class="m">לפי סדר הספר, או לפי סדר הזמן: מפרק מינוס 1 ועד פרק 4</span></a>` : ""}${endNav}<i class="yv-s"></i></section>`;
 
   function wholeFlow(order) {
     const list = order === "time" ? BYTIME : CH;
@@ -357,14 +361,14 @@ a.yv-opt:hover strong { color: var(--accent); }
   const unmount = () => { if (active) active(); };
 
   const glyph = `<svg viewBox="0 0 40 26" width="44" aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l6.5 6.5L22 6" stroke="#1c1c1a"/><path d="M15.5 19.8l.7.7L28.7 6" stroke="${ACCENT}"/></svg>`;
-  const blurb = "תשעה פרקים קצרים שמפוזרים בספר, ולא לפי הסדר. כאן אפשר לקרוא את כולם ברצף, לפי סדר הספר או לפי סדר הזמן.";
+  const blurb = "תשעה פרקים קצרים שמפוזרים בספר, ולא לפי הסדר. שלושה קולות, ערב אחד.";
   CH.forEach(c => B.register({
-    id: c.id, series: "yuval", home: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים",
+    id: c.id, series: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים",
     eyebrow: `סיפור בפרקים · ${CH.length} פרקים · עמודים ${P0}–${P1}`,
     blurb, glyph, accent: ACCENT,
     mount: (root, ctx) => mount(root, { mode: "chapter", ch: c, endNav: ctx.endNav }), unmount
   }));
-  // the story's own page; yuval-book stays as an old address for the same thing
+  // the hidden page, reached from the end of the last chapter; yuval-book stays as an old address for it
   [["yuval", "book"], ["yuval-all", "time"], ["yuval-book", "book"]].forEach(([id, order]) => B.register({
     id, series: "yuval", title: "אני אצל יובל", kind: "סיפור בפרקים", accent: ACCENT,
     mount: root => mount(root, { mode: "whole", order }), unmount
