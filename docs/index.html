@@ -69,19 +69,6 @@ a { color: inherit; }
 .ring-wrap { justify-self: center; width: min(360px, 100%); aspect-ratio: 1; max-width: 100%; }
 .ring-wrap canvas { width: 100%; height: 100%; display: block; }
 
-.epigraph { max-width: 30rem; margin: 0 auto 0 0; padding-block: 2vh 12vh; }
-.epigraph p { font-family: var(--f-display); font-weight: 300; font-size: 24px; line-height: 1.6; margin: 0 0 14px; text-wrap: balance; }
-.epigraph cite { font-style: normal; }
-
-/* every open piece, as a compact grid of cards in book order */
-#featured { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 44px; border-top: 1px solid var(--hair); padding-block: 12px 40px; }
-.featured { display: block; text-decoration: none; padding-block: 30px 26px; border-bottom: 1px solid var(--mist); }
-.featured .glyph { height: 26px; display: flex; align-items: center; color: var(--ink); font-family: var(--f-mono); font-weight: 300; font-size: 22px; }
-.featured .glyph svg { max-width: 44px; height: auto; }
-.featured h2 { font-family: var(--f-display); font-weight: 400; font-size: 25px; line-height: 1.2; margin: 14px 0 6px; }
-.featured p { margin: 0; color: var(--ink-soft); font-size: 15px; line-height: 1.65; }
-.featured .go { display: none; }
-.featured:hover h2 { color: var(--accent); }
 
 .toc { border-top: 1px solid var(--hair); padding-block: 48px 18vh; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 32px; }
 .toc ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 56px; }
@@ -102,12 +89,10 @@ a { color: inherit; }
 .toc .legend span { display: block; }
 .home-foot { padding-block: 0 8vh; color: var(--ink-faint); }
 
-@media (max-width: 1000px) and (min-width: 761px) { #featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
   body { font-size: 18px; }
   .cover { grid-template-columns: minmax(0, 1fr); padding-block: 10vh 6vh; gap: 24px; }
   .ring-wrap { width: min(220px, 70%); justify-self: start; order: -1; }
-  #featured { grid-template-columns: minmax(0, 1fr); }
   .toc { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .toc ol { columns: 1; }
 }
@@ -140,13 +125,6 @@ a { color: inherit; }
       </div>
       <div class="ring-wrap" aria-hidden="true"><canvas id="ring"></canvas></div>
     </section>
-
-    <blockquote class="epigraph">
-      <p>"אנחנו לא רוצים אותך בשמיים, אנחנו רוצים אותך כאן איתנו, על האדמה".</p>
-      <cite class="eyebrow">מתוך ההקדשה</cite>
-    </blockquote>
-
-    <div id="featured"></div>
 
     <section class="toc" aria-labelledby="toc-h">
       <div class="legend">
@@ -277,22 +255,6 @@ window.BOOK = {
       li.appendChild(d);
     }
     list.appendChild(li);
-  });
-
-  /* ---- open stories, in book order ---- */
-  const feat = $("#featured");
-  const seenSeries = new Set();
-  B.toc.filter(e => e.id && B.stories[e.id]).forEach(e => {
-    const s = B.stories[e.id];
-    if (s.series) { if (seenSeries.has(s.series)) return; seenSeries.add(s.series); }
-    const a = document.createElement("a");
-    a.className = "featured"; a.href = "#" + (s.home || e.id); // a series opens on its own page
-    a.innerHTML = `<div class="glyph" aria-hidden="true">${s.glyph || ""}</div>
-      <div><span class="eyebrow"></span><h2></h2><p></p><span class="go">לקריאה</span></div>`;
-    a.querySelector(".eyebrow").textContent = s.eyebrow || `${s.kind} · עמוד ${e.p}`;
-    a.querySelector("h2").textContent = s.title;
-    a.querySelector("p").textContent = s.blurb || "";
-    feat.appendChild(a);
   });
 
   /* ---- cover ring: a single worn band, drawn like a brush stroke ---- */
