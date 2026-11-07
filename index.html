@@ -1,0 +1,388 @@
+<title>ענדתי אושר</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500&family=David+Libre:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@300;400&family=IBM+Plex+Mono:wght@300;400&display=swap">
+<style>
+/* Layout: one quiet column of print-like type, wide white margins; each story is its own
+   scroll piece with a sticky drawing beside the text. Single light theme by design (the
+   book asks for white paper), so every color is set explicitly here. */
+:root {
+  --paper: #ffffff;
+  --mist: #f4f4f1;
+  --hair: #e4e3de;
+  --ink: #1c1c1a;
+  --ink-soft: #74736c;
+  --ink-faint: #b3b2ab;
+  --accent: #c48b90;          /* overridden per story */
+  --f-display: "Frank Ruhl Libre", "Times New Roman", serif;
+  --f-body: "David Libre", "Frank Ruhl Libre", "Times New Roman", serif;
+  --f-ui: "IBM Plex Sans Hebrew", "Arial Hebrew", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --gut-l: max(16px, env(safe-area-inset-left, 0px));
+  --gut-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+html { direction: rtl; scroll-behavior: auto; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--f-body); font-size: 19px; line-height: 1.75;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: inherit; }
+:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
+.eyebrow {
+  font-family: var(--f-ui); font-weight: 300; font-size: 12px;
+  letter-spacing: .04em; color: var(--ink-soft);
+}
+.view[hidden] { display: none !important; }
+
+/* ---------- top bar (story view) ---------- */
+.bar {
+  position: fixed; inset: 0 0 auto; z-index: 40;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: var(--gut-l); padding-right: var(--gut-r);
+  display: flex; align-items: center; justify-content: space-between;
+  height: calc(52px + env(safe-area-inset-top, 0px));
+  background: linear-gradient(var(--paper) 60%, rgba(255,255,255,0));
+  pointer-events: none;
+}
+.bar a, .bar span { pointer-events: auto; }
+.bar a { text-decoration: none; font-family: var(--f-ui); font-weight: 300; font-size: 13px; letter-spacing: .06em; color: var(--ink-soft); transition: color .3s; }
+.bar a:hover { color: var(--ink); }
+.progress { position: fixed; top: env(safe-area-inset-top, 0px); right: 0; height: 1px; width: 100%; background: var(--ink); transform-origin: right; transform: scaleX(0); z-index: 41; }
+
+/* ---------- home ---------- */
+.home { padding-left: var(--gut-l); padding-right: var(--gut-r); }
+.home-inner { max-width: 1080px; margin: 0 auto; }
+.cover {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center; gap: 48px; padding-block: 14vh 10vh;
+}
+.cover h1 {
+  font-family: var(--f-display); font-weight: 300;
+  font-size: clamp(64px, 11vw, 148px); line-height: .95; letter-spacing: -.01em;
+  margin: 0 0 28px; text-wrap: balance;
+}
+.cover .by { font-family: var(--f-ui); font-weight: 300; font-size: 17px; letter-spacing: .04em; color: var(--ink-soft); margin: 0; }
+.ring-wrap { justify-self: center; width: min(360px, 100%); aspect-ratio: 1; max-width: 100%; }
+.ring-wrap canvas { width: 100%; height: 100%; display: block; }
+
+.epigraph { max-width: 30rem; margin: 0 auto 0 0; padding-block: 2vh 12vh; }
+.epigraph p { font-family: var(--f-display); font-weight: 300; font-size: 24px; line-height: 1.6; margin: 0 0 14px; text-wrap: balance; }
+.epigraph cite { font-style: normal; }
+
+/* every open piece, as a compact grid of cards in book order */
+#featured { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 44px; border-top: 1px solid var(--hair); padding-block: 12px 40px; }
+.featured { display: block; text-decoration: none; padding-block: 30px 26px; border-bottom: 1px solid var(--mist); }
+.featured .glyph { height: 26px; display: flex; align-items: center; color: var(--ink); font-family: var(--f-mono); font-weight: 300; font-size: 22px; }
+.featured .glyph svg { max-width: 44px; height: auto; }
+.featured h2 { font-family: var(--f-display); font-weight: 400; font-size: 25px; line-height: 1.2; margin: 14px 0 6px; }
+.featured p { margin: 0; color: var(--ink-soft); font-size: 15px; line-height: 1.65; }
+.featured .go { display: none; }
+.featured:hover h2 { color: var(--accent); }
+
+.toc { border-top: 1px solid var(--hair); padding-block: 48px 18vh; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 32px; }
+.toc ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 56px; }
+.toc li { break-inside: avoid; }
+.toc .row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline;
+  padding-block: 9px; border-bottom: 1px solid var(--mist); text-decoration: none;
+  color: var(--ink-faint);
+}
+.toc .row .t { font-family: var(--f-display); font-size: 18px; line-height: 1.35; }
+.toc .row .s { font-family: var(--f-ui); font-weight: 300; font-size: 12px; letter-spacing: .04em; margin-inline-start: 8px; }
+.toc .row .p { font-family: var(--f-mono); font-weight: 300; font-size: 12px; font-variant-numeric: tabular-nums; }
+.toc .row.open { color: var(--ink); }
+.toc .row.open .p::before { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-inline-end: 10px; vertical-align: middle; }
+.toc a.row:hover .t { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.toc .parts { font-family: var(--f-ui); font-weight: 300; font-size: 12px; color: var(--ink-faint); padding: 0 0 8px; border-bottom: 1px solid var(--mist); }
+.toc .legend { font-family: var(--f-ui); font-weight: 300; font-size: 12px; color: var(--ink-soft); line-height: 1.7; }
+.toc .legend span { display: block; }
+.home-foot { padding-block: 0 8vh; color: var(--ink-faint); }
+
+@media (max-width: 1000px) and (min-width: 761px) { #featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  body { font-size: 18px; }
+  .cover { grid-template-columns: minmax(0, 1fr); padding-block: 10vh 6vh; gap: 24px; }
+  .ring-wrap { width: min(220px, 70%); justify-self: start; order: -1; }
+  #featured { grid-template-columns: minmax(0, 1fr); }
+  .toc { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .toc ol { columns: 1; }
+}
+
+/* ---------- shared story furniture ---------- */
+.story-head { padding-left: var(--gut-l); padding-right: var(--gut-r); padding-block: 22vh 10vh; max-width: 1080px; margin: 0 auto; }
+.story-head h1 { font-family: var(--f-display); font-weight: 300; font-size: clamp(56px, 9vw, 120px); line-height: 1; margin: 18px 0 22px; text-wrap: balance; }
+.story-head .meta { font-family: var(--f-ui); font-weight: 300; font-size: 13px; color: var(--ink-soft); letter-spacing: .06em; }
+.story-end { padding-left: var(--gut-l); padding-right: var(--gut-r); padding-block: 14vh 16vh; max-width: 1080px; margin: 0 auto; display: grid; gap: 40px; }
+.story-end .mark { width: 40px; height: 1px; background: var(--ink); }
+.story-end nav { display: flex; flex-wrap: wrap; gap: 28px; font-family: var(--f-ui); font-size: 13px; letter-spacing: .08em; }
+.story-end nav a { text-decoration: none; border-bottom: 1px solid var(--hair); padding-bottom: 3px; }
+.story-end nav a:hover { border-color: var(--ink); }
+.story-end .soon { color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+</style>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ================= HOME ================= -->
+<main class="view home" id="home">
+  <div class="home-inner">
+    <section class="cover">
+      <div>
+        <h1>ענדתי<br>אושר</h1>
+        <p class="by">בועז כץ</p>
+      </div>
+      <div class="ring-wrap" aria-hidden="true"><canvas id="ring"></canvas></div>
+    </section>
+
+    <blockquote class="epigraph">
+      <p>"אנחנו לא רוצים אותך בשמיים, אנחנו רוצים אותך כאן איתנו, על האדמה".</p>
+      <cite class="eyebrow">מתוך ההקדשה</cite>
+    </blockquote>
+
+    <div id="featured"></div>
+
+    <section class="toc" aria-labelledby="toc-h">
+      <div class="legend">
+        <span class="eyebrow" id="toc-h">תוכן</span>
+        <span style="margin-top:14px">המספרים הם עמודי הספר המודפס.</span>
+        <span>כל הקטעים פתוחים לקריאה.</span>
+      </div>
+      <ol id="toc-list"></ol>
+    </section>
+  </div>
+</main>
+
+<!-- ================= STORY ================= -->
+<div class="view" id="story" hidden>
+  <header class="bar">
+    <a href="#">ענדתי אושר</a>
+    <a href="#toc">תוכן</a>
+  </header>
+  <div id="story-root"></div>
+</div>
+
+<script>
+/* Book registry. `id` marks a story that has its own page. */
+window.BOOK = {
+  toc: [
+    { t: "מוקדש", p: 6, id: "mukdash" },
+    { t: "איזון טמפרטורות", p: 8, id: "izun-temperaturot" },
+    { t: "593", p: 9, id: "n593" },
+    { t: "אני אצל יובל", s: "פרק 1", p: 11, id: "yuval-1" },
+    { t: "אהבה רגעית", p: 12, id: "ahava-regit" },
+    { t: "מייבש דמעות", p: 15, id: "meyabesh-dmaot" },
+    { t: "אני אצל יובל", s: "פרק 2", p: 16, id: "yuval-2" },
+    { t: "עמוק במגירה", p: 17, id: "amok-bamegira" },
+    { t: "מרי-אן", p: 20, id: "meri-an" },
+    { t: "אבנים משתלבות", p: 22, id: "avanim-mishtalvot" },
+    { t: "אני אצל יובל", s: "פרק מינוס 1", p: 23, id: "yuval-m1" },
+    { t: "מהפכה", s: "חלק 1", p: 24, id: "mahapecha-1" },
+    { t: "מהפכה", s: "חלק 2", p: 26, id: "mahapecha-2" },
+    { t: "ארבעים ושתים", p: 28, id: "arbaim-ushtaim" },
+    { t: "אני אצל יובל", s: "פרק 0", p: 30, id: "yuval-0" },
+    { t: "אני אצל יובל", s: "פרק 1 (שוב)", p: 31, id: "yuval-1b" },
+    { t: "אני אצל יובל", s: "פרק 2 (שוב)", p: 32, id: "yuval-2b" },
+    { t: "קשר זוגי", p: 33, id: "kesher-zugi" },
+    { t: "מצטער", p: 35, id: "metzta-er" },
+    { t: "אני אצל יובל", s: "פרק 3", p: 36, id: "yuval-3" },
+    { t: "אני אצל יובל", s: "פרק 3.1", p: 37, id: "yuval-31" },
+    { t: "אני אצל יובל", s: "פרק 4 ואחרון", p: 37, id: "yuval-4" },
+    { t: "אהבת אמת", p: 39, id: "ahavat-emet" },
+    { t: "מקשיבה אבל לא שומעת", p: 41, id: "makshiva" },
+    { t: "הפעם הראשונה", p: 43, id: "hapaam-harishona" },
+    { t: "הולכת", p: 46, id: "holechet" },
+    { t: "צעד צעד", p: 47, id: "tzaad-tzaad" },
+    { t: "משבר", p: 49, id: "mashber" },
+    { t: "עצמאות", p: 51, id: "atzmaut" },
+    { t: "אפוקליפסה אתמול", p: 52, id: "apocalypse", parts: ["המגפה", "לחיות בלי לישון", "האל מתוך המכונה"] },
+    { t: "אינסומניה של אבל", p: 60, id: "insomnia" },
+    { t: "אלגנטית", p: 61, id: "elegantit" },
+    { t: "לדעת לחזור", p: 62, id: "ladaat-lachzor" },
+    { t: "מישהי להיאחז בה", p: 64, id: "mishehi" },
+    { t: "סוף החורף של רוני", p: 68, id: "roni" },
+    { t: "חברה של תומר", p: 70, id: "tomer" },
+    { t: "הבטחות", p: 72, id: "havtachot" },
+    { t: "החלטות", p: 74, id: "hachlatot" },
+    { t: "זיכרון", p: 76, id: "zikaron" },
+    { t: "ענדתי אושר", p: 77, id: "andati-osher" },
+    { t: "הערת שוליים", p: 78, id: "hearat-shulayim" }
+  ],
+  stories: {},
+  register(story) { this.stories[story.id] = story; }
+};
+</script>
+<script src="stories/kit.js"></script>
+<script src="stories/ahava-regit.js"></script>
+<script src="stories/meyabesh-dmaot.js"></script>
+<script src="stories/ani-etzel-yuval.js"></script>
+<script src="stories/amok-bamegira.js"></script>
+<script src="stories/meri-an.js"></script>
+<script src="stories/avanim-mishtalvot.js"></script>
+<script src="stories/mukdash.js"></script>
+<script src="stories/izun-temperaturot.js"></script>
+<script src="stories/n593.js"></script>
+<script src="stories/mahapecha.js"></script>
+<script src="stories/arbaim-ushtaim.js"></script>
+<script src="stories/kesher-zugi.js"></script>
+<script src="stories/metzta-er.js"></script>
+<script src="stories/ahavat-emet.js"></script>
+<script src="stories/makshiva.js"></script>
+<script src="stories/hapaam-harishona.js"></script>
+<script src="stories/holechet.js"></script>
+<script src="stories/tzaad-tzaad.js"></script>
+<script src="stories/mashber.js"></script>
+<script src="stories/atzmaut.js"></script>
+<script src="stories/apocalypse.js"></script>
+<script src="stories/insomnia.js"></script>
+<script src="stories/elegantit.js"></script>
+<script src="stories/ladaat-lachzor.js"></script>
+<script src="stories/mishehi.js"></script>
+<script src="stories/roni-tomer.js"></script>
+<script src="stories/havtachot.js"></script>
+<script src="stories/hachlatot.js"></script>
+<script src="stories/zikaron.js"></script>
+<script src="stories/andati-osher.js"></script>
+<script src="stories/hearat-shulayim.js"></script>
+<script>
+(() => {
+  const B = window.BOOK;
+  const $ = (s, r = document) => r.querySelector(s);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- table of contents ---- */
+  const list = $("#toc-list");
+  B.toc.forEach(e => {
+    const li = document.createElement("li");
+    const open = e.id && B.stories[e.id];
+    const row = document.createElement(open ? "a" : "div");
+    row.className = "row" + (open ? " open" : "");
+    if (open) row.href = "#" + e.id;
+    row.innerHTML = `<span><span class="t"></span>${e.s ? '<span class="s"></span>' : ""}</span><span class="p"></span>`;
+    row.querySelector(".t").textContent = e.t;
+    if (e.s) row.querySelector(".s").textContent = e.s;
+    row.querySelector(".p").textContent = e.p;
+    if (!open) row.setAttribute("aria-label", `${e.t}${e.s ? " " + e.s : ""}, בקרוב`);
+    li.appendChild(row);
+    if (e.parts) {
+      const d = document.createElement("div");
+      d.className = "parts";
+      d.textContent = e.parts.map((p, i) => `${i + 1}. ${p}`).join("   ");
+      li.appendChild(d);
+    }
+    list.appendChild(li);
+  });
+
+  /* ---- open stories, in book order ---- */
+  const feat = $("#featured");
+  const seenSeries = new Set();
+  B.toc.filter(e => e.id && B.stories[e.id]).forEach(e => {
+    const s = B.stories[e.id];
+    if (s.series) { if (seenSeries.has(s.series)) return; seenSeries.add(s.series); }
+    const a = document.createElement("a");
+    a.className = "featured"; a.href = "#" + e.id;
+    a.innerHTML = `<div class="glyph" aria-hidden="true">${s.glyph || ""}</div>
+      <div><span class="eyebrow"></span><h2></h2><p></p><span class="go">לקריאה</span></div>`;
+    a.querySelector(".eyebrow").textContent = s.eyebrow || `${s.kind} · עמוד ${e.p}`;
+    a.querySelector("h2").textContent = s.title;
+    a.querySelector("p").textContent = s.blurb || "";
+    feat.appendChild(a);
+  });
+
+  /* ---- cover ring: a single worn band, drawn like a brush stroke ---- */
+  const ring = $("#ring");
+  function drawRing(progress) {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = ring.clientWidth, h = ring.clientHeight;
+    if (!w) return;
+    ring.width = w * dpr; ring.height = h * dpr;
+    const c = ring.getContext("2d");
+    c.scale(dpr, dpr);
+    c.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2, R = w * .36;
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const start = -Math.PI * .62, span = Math.PI * 1.88 * progress;
+    const bristles = 46;
+    for (let b = 0; b < bristles; b++) {
+      const off = (rnd() - .5) * w * .05;
+      const wob = rnd() * 6;
+      const alpha = .05 + rnd() * .11;
+      c.beginPath();
+      const steps = 220;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps, a = start + span * t;
+        const taper = Math.sin(Math.min(1, t * 1.05) * Math.PI) ** .35;
+        const r = R + off * taper + Math.sin(a * 3 + wob) * 1.6;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.strokeStyle = `rgba(28,28,26,${alpha})`;
+      c.lineWidth = .6 + rnd() * 1.4;
+      c.stroke();
+    }
+  }
+  function animateRing() {
+    if (reduced) return drawRing(1);
+    const t0 = performance.now(), dur = 1800;
+    const f = now => {
+      const k = Math.min(1, (now - t0) / dur);
+      drawRing(1 - Math.pow(1 - k, 3));
+      if (k < 1) requestAnimationFrame(f);
+    };
+    requestAnimationFrame(f);
+  }
+
+  /* ---- router ---- */
+  const home = $("#home"), storyView = $("#story"), root = $("#story-root"), bar = $("#progress");
+  let current = null;
+  function route() {
+    const id = location.hash.slice(1);
+    const story = B.stories[id];
+    if (current && current.unmount) current.unmount();
+    current = null;
+    if (story) {
+      home.hidden = true; storyView.hidden = false;
+      document.title = story.title + " · ענדתי אושר";
+      document.documentElement.style.setProperty("--accent", story.accent || "#c48b90");
+      root.innerHTML = "";
+      story.mount(root, { endNav: endNav(nextOf(id)) });
+      current = story;
+    } else {
+      storyView.hidden = true; home.hidden = false;
+      document.title = "ענדתי אושר";
+      document.documentElement.style.setProperty("--accent", "#c48b90");
+      if (!ring.dataset.drawn) { ring.dataset.drawn = 1; animateRing(); }
+    }
+    const anchor = !story && document.getElementById(id === "toc" ? "toc-h" : "");
+    if (anchor) anchor.closest("section").scrollIntoView(); else window.scrollTo(0, 0);
+    onScroll();
+  }
+  function nextOf(id) {
+    const i = B.toc.findIndex(e => e.id === id);
+    return B.toc[i + 1] || null;
+  }
+  function endNav(next) {
+    const esc = s => s.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+    const name = next ? esc(next.t + (next.s ? " · " + next.s : "")) : "";
+    const nxt = !next ? "" : B.stories[next.id]
+      ? `<a href="#${next.id}">הבא: ${name}</a>`
+      : `<span class="soon">הבא: ${name} · בקרוב</span>`;
+    return `<nav><a href="#toc">חזרה לתוכן</a>${nxt}</nav>`;
+  }
+  function onScroll() {
+    if (/\b(yv|kt)-lock\b/.test(document.documentElement.className)) return; // paged reader drives the bar itself
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = `scaleX(${storyView.hidden || max <= 0 ? 0 : Math.min(1, scrollY / max)})`;
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("hashchange", route);
+  addEventListener("resize", () => { if (!home.hidden) drawRing(1); });
+  route();
+})();
+</script>
