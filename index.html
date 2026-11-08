@@ -50,6 +50,20 @@ a { color: inherit; }
 .bar a, .bar span { pointer-events: auto; }
 .bar a { text-decoration: none; font-family: var(--f-ui); font-weight: 300; font-size: 13px; letter-spacing: .06em; color: var(--ink-soft); transition: color .3s; }
 .bar a:hover { color: var(--ink); }
+.bar-end { display: flex; align-items: center; gap: 22px; }
+
+/* ---------- share: a quiet word that opens a short list (or the phone's own share sheet) ---------- */
+.share { position: relative; pointer-events: auto; }
+.share-btn { border: 0; background: none; padding: 0; cursor: pointer; font-family: var(--f-ui); font-weight: 300; font-size: 13px; letter-spacing: .06em; color: var(--ink-soft); transition: color .3s; }
+.share-btn:hover, .share-btn[aria-expanded="true"] { color: var(--ink); }
+.share-pop { position: absolute; top: calc(100% + 12px); left: 0; z-index: 45; min-width: 170px; background: var(--paper); border: 1px solid var(--hair);
+  padding: 6px 0; display: grid; font-family: var(--f-ui); font-weight: 300; font-size: 13px; letter-spacing: .04em; }
+.share-pop[hidden] { display: none; }
+.share-pop a, .share-pop button { display: block; text-align: start; padding: 9px 18px; border: 0; background: none; font: inherit; color: var(--ink); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.share-pop a:hover, .share-pop button:hover { background: var(--mist); }
+.share-pop .done { color: var(--ink-soft); }
+.cover .share { margin-top: 22px; }
+.cover .share-pop { left: auto; right: 0; }
 .progress { position: fixed; top: env(safe-area-inset-top, 0px); right: 0; height: 1px; width: 100%; background: var(--ink); transform-origin: right; transform: scaleX(0); z-index: 41; }
 
 /* ---------- home ---------- */
@@ -121,6 +135,7 @@ a { color: inherit; }
       <div>
         <h1>ענדתי<br>אושר</h1>
         <p class="by">בועז כץ</p>
+        <div class="share" data-share="home"></div>
       </div>
       <div class="ring-wrap" aria-hidden="true"><canvas id="ring"></canvas></div>
     </section>
@@ -140,7 +155,7 @@ a { color: inherit; }
 <div class="view" id="story" hidden>
   <header class="bar">
     <a href="#">ענדתי אושר</a>
-    <a href="#toc">תוכן</a>
+    <span class="bar-end"><span class="share" data-share="story"></span><a href="#toc">תוכן</a></span>
   </header>
   <div id="story-root"></div>
 </div>
@@ -299,6 +314,48 @@ window.BOOK = {
     };
     requestAnimationFrame(f);
   }
+
+  /* ---- share ----
+     Links always point at the public site's share pages (BASE/<id>/), which carry each piece's
+     own preview for WhatsApp, Facebook and the rest, then forward to BASE/#<id>. */
+  const SHARE_BASE = "https://katzboaz.github.io/andati-osher/";
+  const shareTarget = () => {
+    const id = location.hash.slice(1);
+    const e = B.toc.find(x => x.id === id);
+    if (e) return { url: SHARE_BASE + id + "/", title: `${e.t}${e.s ? " · " + e.s : ""} · ענדתי אושר` };
+    if (/^yuval(-all|-book)?$/.test(id)) return { url: SHARE_BASE + "yuval/", title: "אני אצל יובל · ענדתי אושר" };
+    return { url: SHARE_BASE, title: "ענדתי אושר · בועז כץ" };
+  };
+  document.querySelectorAll("[data-share]").forEach(box => {
+    box.innerHTML = `<button type="button" class="share-btn" aria-haspopup="true" aria-expanded="false">${box.dataset.share === "home" ? "לשתף את הספר" : "שיתוף"}</button><div class="share-pop" hidden></div>`;
+    const btn = box.firstElementChild, pop = box.lastElementChild;
+    const close = () => { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+    btn.addEventListener("click", async e => {
+      e.stopPropagation();
+      const t = box.dataset.share === "home" ? { url: SHARE_BASE, title: "ענדתי אושר · בועז כץ" } : shareTarget();
+      // on a phone, the phone's own share sheet already knows every app
+      if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share({ title: t.title, url: t.url }); } catch (err) {} return; }
+      if (!pop.hidden) return close();
+      const u = encodeURIComponent(t.url), tx = encodeURIComponent(t.title);
+      pop.innerHTML = `<a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(t.title + " " + t.url)}">וואטסאפ</a>
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${u}">פייסבוק</a>
+        <a target="_blank" rel="noopener" href="https://x.com/intent/post?text=${tx}&url=${u}">X</a>
+        <a target="_blank" rel="noopener" href="https://t.me/share/url?url=${u}&text=${tx}">טלגרם</a>
+        <button type="button" class="copy">העתקת קישור</button>`;
+      pop.querySelector(".copy").onclick = async ev => {
+        ev.stopPropagation();
+        try { await navigator.clipboard.writeText(t.url); ev.target.textContent = "הקישור הועתק"; ev.target.classList.add("done"); setTimeout(close, 900); }
+        catch (err) { ev.target.textContent = t.url; }
+      };
+      pop.querySelectorAll("a").forEach(a => a.addEventListener("click", () => setTimeout(close, 0)));
+      pop.hidden = false; btn.setAttribute("aria-expanded", "true");
+    });
+    pop.addEventListener("click", e => e.stopPropagation());
+    // a click outside only closes the list; it should not also turn the page underneath
+    document.addEventListener("click", e => { if (!pop.hidden && !box.contains(e.target)) { close(); e.stopPropagation(); } }, true);
+    addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+    addEventListener("hashchange", close);
+  });
 
   /* ---- router ---- */
   const home = $("#home"), storyView = $("#story"), root = $("#story-root"), bar = $("#progress");
