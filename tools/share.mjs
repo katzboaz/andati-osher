@@ -38,6 +38,9 @@ const pieces = toc.filter(e => e.id && S[e.id]).map(e => ({
 const yv = S["yuval"];
 if (yv) pieces.push({ id: "yuval", title: "אני אצל יובל", sub: "כל הפרקים ברצף", page: 0, kind: "סיפור בפרקים",
   blurb: "תשעת הפרקים של אני אצל יובל ברצף, לפי סדר הספר או לפי סדר הזמן.", glyph: S["yuval-1"].glyph, accent: yv.accent });
+// the plain ebook version of the whole book
+pieces.push({ id: "read", title: BOOK, sub: "קריאה רגילה, עמוד אחר עמוד", page: 0, kind: "ספר",
+  blurb: "הספר כולו כספר רגיל: עמוד אחר עמוד, בלי ציורים ובלי תנועה.", glyph: S["andati-osher"].glyph, accent: "#c48b90" });
 const home = { id: "home", title: BOOK, sub: AUTHOR, page: 0, kind: "ספר", blurb: BOOK_BLURB, glyph: S["andati-osher"].glyph, accent: "#c48b90" };
 
 /* ---- cards ---- */

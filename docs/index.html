@@ -81,7 +81,9 @@ a { color: inherit; }
 .share-pop a, .share-pop button { display: block; text-align: start; padding: 9px 18px; border: 0; background: none; font: inherit; color: var(--ink); text-decoration: none; cursor: pointer; white-space: nowrap; }
 .share-pop a:hover, .share-pop button:hover { background: var(--mist); }
 .share-pop .done { color: var(--ink-soft); }
-.cover .share { margin-top: 22px; }
+.cover-acts { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 26px; }
+.cover-acts .read { font-family: var(--f-ui); font-weight: 300; font-size: 13px; letter-spacing: .06em; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 3px; }
+.toc .legend a { color: var(--ink); text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .cover .share-pop { left: auto; right: 0; }
 .progress { position: fixed; top: env(safe-area-inset-top, 0px); right: 0; height: 1px; width: 100%; background: var(--ink); transform-origin: right; transform: scaleX(0); z-index: 41; }
 
@@ -154,7 +156,7 @@ a { color: inherit; }
       <div>
         <h1>ענדתי<br>אושר</h1>
         <p class="by">בועז כץ</p>
-        <div class="share" data-share="home"></div>
+        <div class="cover-acts"><a class="read" href="#read">לקרוא כספר רגיל</a><div class="share" data-share="home"></div></div>
       </div>
       <div class="ring-wrap" aria-hidden="true"><canvas id="ring"></canvas></div>
     </section>
@@ -164,6 +166,7 @@ a { color: inherit; }
         <span class="eyebrow" id="toc-h">תוכן</span>
         <span style="margin-top:14px">המספרים הם עמודי הספר המודפס.</span>
         <span>כל הקטעים פתוחים לקריאה.</span>
+        <span style="margin-top:14px">מעדיפים פשוט לקרוא? <a href="#read">הספר כולו, עמוד אחר עמוד</a>.</span>
       </div>
       <ol id="toc-list"></ol>
     </section>
@@ -261,6 +264,7 @@ window.BOOK = {
 <script src="stories/zikaron.js"></script>
 <script src="stories/andati-osher.js"></script>
 <script src="stories/hearat-shulayim.js"></script>
+<script src="stories/reader.js"></script>
 <script>
 (() => {
   const B = window.BOOK;
@@ -342,6 +346,7 @@ window.BOOK = {
     const id = location.hash.slice(1);
     const e = B.toc.find(x => x.id === id);
     if (e) return { url: SHARE_BASE + id + "/", title: `${e.t}${e.s ? " · " + e.s : ""} · ענדתי אושר` };
+    if (id === "read") return { url: SHARE_BASE + "read/", title: "ענדתי אושר · קריאה רגילה" };
     if (/^yuval(-all|-book)?$/.test(id)) return { url: SHARE_BASE + "yuval/", title: "אני אצל יובל · ענדתי אושר" };
     return { url: SHARE_BASE, title: "ענדתי אושר · בועז כץ" };
   };

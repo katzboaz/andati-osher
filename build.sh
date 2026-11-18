@@ -1,9 +1,11 @@
 #!/bin/zsh
 # Build the standalone site into docs/ for GitHub Pages. index.html is kept as the
 # Artifact body (no doctype), so the build wraps it in a full document, then adds the
-# share pages and preview images (tools/share.mjs).
+# share pages and preview images (tools/share.mjs). The plain-text book for the ebook
+# reader is read back from the pieces first (tools/booktext.mjs).
 set -e
 cd "${0:A:h}"
+node tools/booktext.mjs
 for f in stories/*.js; do node --check "$f"; done
 rm -rf docs && mkdir -p docs/stories
 cp stories/*.js docs/stories/
