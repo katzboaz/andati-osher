@@ -116,7 +116,7 @@ for (const p of pieces) {
   fs.writeFileSync(path.join(DOCS, p.id, "index.html"), `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${m.tags}
-<script>location.replace("../#${p.id}");</script>
+<script>location.replace("../" + location.search + "#${p.id}");</script>
 </head><body><p><a href="../#${p.id}">${esc(m.title)}</a></p></body></html>
 `);
 }

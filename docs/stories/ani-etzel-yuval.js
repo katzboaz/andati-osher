@@ -312,6 +312,7 @@ a.yv-opt:hover strong { color: var(--accent); }
       // a chapter counts as read once its last page has been reached
       const done = whole ? (r && n === r.to ? r.id : null) : (n >= total - 2 ? opts.ch.id : null);
       if (done && !read.has(done)) { read.add(done); saveRead(read); placeMarks(); }
+      if (n === total - 1 && B.reached) B.reached();
     }
     const next = () => go(page + 1), prev = () => go(page - 1);
 

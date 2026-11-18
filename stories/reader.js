@@ -194,6 +194,7 @@
       if (bar) bar.style.transform = `scaleX(${spreads > 1 ? n / (spreads - 1) : 1})`;
       rd.querySelector(".rd-ctrl .pv").disabled = n === 0;
       rd.querySelector(".rd-ctrl .nx").disabled = n === spreads - 1;
+      if (n === spreads - 1 && spreads > 1 && B.reached) B.reached();
       // the running head names the piece on the page, and the place is remembered by the first block in view
       const first = marks.find(m => m.col >= c0) || marks[marks.length - 1];
       if (animate && first) { at = first.k; store.set(KEY_AT, at); }

@@ -258,6 +258,7 @@ html.kt-lock, html.kt-lock body { overflow: hidden; height: 100%; overscroll-beh
       const part = [...parts].reverse().find(p => n >= p.page);
       where.textContent = part ? `${o.title} · ${part.name}` : o.title;
       if (o.onPage) o.onPage(n, total, kt);
+      if (n === total - 1 && total > 1 && window.BOOK.reached) window.BOOK.reached();
     }
     const next = () => go(pageN + 1), prev = () => go(pageN - 1);
     const turns = bindTurns(stage, { next, prev, first: () => go(0), last: () => go(total - 1) });
@@ -317,6 +318,7 @@ html.kt-lock, html.kt-lock body { overflow: hidden; height: 100%; overscroll-beh
       ks.querySelector(".k-ctrl .nx").disabled = n === els.length - 1;
       const bar = shellBar(); if (bar) bar.style.transform = `scaleX(${n / (els.length - 1)})`;
       if (o.onFrame) o.onFrame(n, ks);
+      if (n === els.length - 1 && window.BOOK.reached) window.BOOK.reached();
     }
     const next = () => go(f + 1), prev = () => go(f - 1);
     const turns = bindTurns(stage, { next, prev, first: () => go(0), last: () => go(els.length - 1) });
